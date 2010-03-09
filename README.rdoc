@@ -55,24 +55,24 @@ You can also define different sets of fields for different representations of yo
 
 E.g. with the following definition:
 
-    class User < ActiveRecord::Base
-      include ExtJS::Model
+	class User < ActiveRecord::Base
+	  include ExtJS::Model
 
-      whorm_fieldset :grid, [
-				:name, 
-				:description, 
-				{:company => [:name, :description]}
-			]
-			
-      whorm_fieldset :combo, [:full_name]
-  		
-			##
-			# computed field
-			#
-      def full_name
-        "#{first_name} #{name}"
-      end
-    end
+	  whorm_fieldset :grid, [
+	    :name, 
+		  :description, 
+	    {:company => [:name, :description]}
+	  ]
+
+	  whorm_fieldset :combo, [:full_name]
+	
+	  ##
+	  # computed field
+	  #
+	  def full_name
+	    "#{first_name} #{name}"
+	  end
+	end
 
 You can get store configs for both representations with
     User.whorm_schema(:grid)
