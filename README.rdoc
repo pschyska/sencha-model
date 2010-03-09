@@ -1,9 +1,9 @@
-= mvc
+= Whorm
 
 A simple Model mixin with adapters for various ORM frameworks such as ActiveRecord, DataMapper and MongoMapper.  Whorm was originally created as part of the gem extjs-mvc[http://github.com/extjs/mvc] to assist with auto-generating ExtJS Stores (Ext.data.Store).  However, it can be useful for a variety of Javascript frameworks for rendering data on the client.
 
 
-===Installation
+=== Installation
 	% sudo gem install gemcutter
 	% sudo gem install whorm
 
