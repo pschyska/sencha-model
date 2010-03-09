@@ -1,19 +1,18 @@
 ##
-# ActiveRecord adapter to ExtJS::Model mixin.
+# ActiveRecord adapter to Whorm::Model mixin.
 #
-module ExtJS
+module Whorm
   module Model
     module ClassMethods
-      
-      def extjs_primary_key
+      def whorm_primary_key
         self.primary_key.to_sym
       end
       
-      def extjs_column_names
+      def whorm_column_names
         self.column_names.map(&:to_sym)
       end
       
-      def extjs_columns_hash
+      def whorm_columns_hash
         self.columns_hash.symbolize_keys
       end
       
@@ -22,9 +21,9 @@ module ExtJS
       # @param {ActiveRecord::ConnectionAdapters::Column}
       # @return {Boolean}
       #
-      def extjs_allow_blank(col)
+      def whorm_allow_blank(col)
         # if the column is the primary key always allow it to be blank.
-        # Otherwise we could not create new records with ExtJS because
+        # Otherwise we could not create new records with whorm because
         # new records have no id and thus cannot be valid
         col.name == self.primary_key || col.null
       end
@@ -34,7 +33,7 @@ module ExtJS
       # @param {ActiveRecord::ConnectionAdapters::Column}
       # @return {Mixed}
       #
-      def extjs_default(col)
+      def whorm_default(col)
         col.default
       end
       
@@ -42,7 +41,7 @@ module ExtJS
       # returns the corresponding column name of the type column for a polymorphic association
       # @param {String/Symbol} the id column name for this association
       # @return {Symbol}
-      def extjs_polymorphic_type(id_column_name)
+      def whorm_polymorphic_type(id_column_name)
         id_column_name.to_s.gsub(/_id\Z/, '_type').to_sym
       end
       
@@ -51,7 +50,7 @@ module ExtJS
       # @param {ActiveRecord::ConnectionAdapters::Column}
       # @return {String}
       #
-      def extjs_type(col)
+      def whorm_type(col)
         type = col.type.to_s
         case type
           when "datetime", "date", "time", "timestamp"
@@ -70,8 +69,8 @@ module ExtJS
       # return a simple, normalized list of AR associations having the :name, :type and association class
       # @return {Array}
       #
-      def extjs_associations
-        @extjs_associations ||= self.reflections.inject({}) do |memo, (key, assn)|
+      def whorm_associations
+        @whorm_associations ||= self.reflections.inject({}) do |memo, (key, assn)|
           type = (assn.macro === :has_many || assn.macro === :has_and_belongs_to_many) ? :many : assn.macro
           memo[key.to_sym] = {
             :name => key.to_sym, 

@@ -4,11 +4,11 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "extjs-mvc"
-    gem.summary = %Q{Ruby ORM tools to assist with rendering Ext.data.Store}
-    gem.description = %Q{MVC tools to assist with ExtJS development in Rails and Merb}
+    gem.name = "whorm"
+    gem.summary = %Q{Ruby ORM-inspecting tools to assist with generating JSON representations of database schemas and recordsets.}
+    gem.description = %Q{Whorm contains a Model-mixin named Whorm::Model.  Once included, your Model now exposes a class-method named #whorm_schema which will return Hash representation of the Model-schema.}
     gem.email = "christocracy@gmail.com"
-    gem.homepage = "http://github.com/extjs/mvc"
+    gem.homepage = "http://github.com/christocracy/whorm"
     gem.authors = ["Chris Scott"]
     gem.add_development_dependency "shoulda"
     gem.add_development_dependency "mocha"

@@ -1,1 +1,1 @@
-require 'extjs-mvc'
+require 'whorm'

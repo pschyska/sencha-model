@@ -1,3 +1,3 @@
 class DataType < ActiveRecord::Base
-  include ExtJS::Model
+  include Whorm::Model
 end

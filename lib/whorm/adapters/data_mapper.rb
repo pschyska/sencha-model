@@ -1,34 +1,34 @@
 ##
-# DataMapper adapter for ExtJS::Model mixin
+# DataMapper adapter for Whorm::Model mixin
 #
 
-module ExtJS
+module Whorm
   module Model
     module ClassMethods
       
-      def extjs_primary_key
+      def whorm_primary_key
         self.key.first.name
       end
       
-      def extjs_column_names
+      def whorm_column_names
         self.properties.collect {|p| p.name.to_s }
       end
       
-      def extjs_columns_hash
-        if @extjs_columns_hash.nil?
-          @extjs_columns_hash = {}
+      def whorm_columns_hash
+        if @whorm_columns_hash.nil?
+          @whorm_columns_hash = {}
           self.properties.each do |p|
-            @extjs_columns_hash[p.name] = p
+            @whorm_columns_hash[p.name] = p
           end
         end
-        @extjs_columns_hash
+        @whorm_columns_hash
       end
       
-      def extjs_allow_blank(col)
+      def whorm_allow_blank(col)
          (col === self.key.first) ? true : col.nullable?
       end
       
-      def extjs_type(col)
+      def whorm_type(col)
         type = ((col.type.respond_to?(:primitive)) ? col.type.primitive : col.type).to_s
         case type
           when "DateTime", "Date", "Time"
@@ -44,12 +44,12 @@ module ExtJS
         end
       end
       
-      def extjs_associations
-        if @extjs_associations.nil?  
-          @extjs_associations = {}
+      def whorm_associations
+        if @whorm_associations.nil?  
+          @whorm_associations = {}
           self.relationships.keys.each do |key|
             assn = self.relationships[key]
-            @extjs_associations[key.to_sym] = {
+            @whorm_associations[key.to_sym] = {
               :name => key, 
               :type => type = (assn.options[:max].nil? && assn.options[:min].nil?) ? :belongs_to : (assn.options[:max] > 1) ? :many : nil ,
               :class => assn.parent_model,
@@ -58,7 +58,7 @@ module ExtJS
             }
           end
         end
-        @extjs_associations
+        @whorm_associations
       end
     end
   end
