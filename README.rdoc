@@ -40,7 +40,7 @@ fields with will be used to render a record to Hash for later JSON-encoding.
     end
   end
 
-After including the model mixin <tt>ExtJS::Model</tt>, try typing the following in <tt>irb</tt> console:
+After including the model mixin <tt>Whorm::Model</tt>, try typing the following in <tt>irb</tt> console:
     >> User.whorm_schema
     => { :idProperty=>"id", :fields=>[
          {:type=>'int', :allowBlank=>true, :name=>"id"},
@@ -49,8 +49,7 @@ After including the model mixin <tt>ExtJS::Model</tt>, try typing the following 
          {:type=>'string', :allowBlank=>false, :name=>"email", :defaultValue => nil}
        ]}
 
-An auto-generated <tt>Ext.data.JsonReader</tt> configuration!
-
+An auto-generated schema.  This field-names were originally designed to be consumed by an <tt>Ext.data.Store</tt> from the {Ext JS Framework}[http://extjs.com].  TODO: make the field-names configurable.
 
 You can also define different sets of fields for different representations of your model.
 
@@ -59,9 +58,17 @@ E.g. with the following definition:
     class User < ActiveRecord::Base
       include ExtJS::Model
 
-      whorm_fieldset :grid, fields => [:name, :description, :company => [:name, :description]]
+      whorm_fieldset :grid, [
+				:name, 
+				:description, 
+				{:company => [:name, :description]}
+			]
+			
       whorm_fieldset :combo, [:full_name]
-  
+  		
+			##
+			# computed field
+			#
       def full_name
         "#{first_name} #{name}"
       end
