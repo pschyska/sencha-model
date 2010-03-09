@@ -60,7 +60,7 @@ E.g. with the following definition:
 
 	  whorm_fieldset :grid, [
 	    :name, 
-		  :description, 
+      :description, 
 	    {:company => [:name, :description]}
 	  ]
 
