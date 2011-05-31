@@ -1,47 +1,47 @@
-= Whorm
+= Sencha::Model
 
-A simple Model mixin with adapters for various ORM frameworks such as ActiveRecord, DataMapper and MongoMapper.  Whorm was originally created as part of the gem extjs-mvc[http://github.com/extjs/mvc] to assist with auto-generating ExtJS Stores (Ext.data.Store).  However, it can be useful for a variety of Javascript frameworks for rendering data on the client.
+A simple Model mixin with adapters for various ORM frameworks such as ActiveRecord, DataMapper and MongoMapper.  Sencha::Model was originally created as part of the gem extjs-mvc[http://github.com/extjs/mvc] to assist with auto-generating ExtJS Stores (Ext.data.Store).  However, it can be useful for a variety of Javascript frameworks for rendering data on the client.
 
 
 === Installation
 	% sudo gem install gemcutter
-	% sudo gem install whorm
+	% sudo gem install sencha-model
 
 
-=== An ORM Model mixin:  Whorm::Model
-whorm contains Model mixin named <tt>Whorm::Model</tt> which works for <b>three</b> popular ORM frameworks, ActiveRecord, DataMapper and MongoMapper.  The API for each framework is identical and an adapter can be created for just about any
+=== An ORM Model mixin:  Sencha::Model
+sencha-model contains Model mixin named <tt>Sencha::Model</tt> which works for <b>three</b> popular ORM frameworks, ActiveRecord, DataMapper and MongoMapper.  The API for each framework is identical and an adapter can be created for just about any
 ORM in about an hour.
 
-Simply include the mixin into your model.  Use the class-method <tt>whorm_fields</tt> to specify those
+Simply include the mixin into your model.  Use the class-method <tt>sencha_fields</tt> to specify those
 fields with will be used to render a record to Hash for later JSON-encoding.
 
   class User < ActiveRecord::Base
-    include Whorm::Model
+    include Sencha::Model
 
-    whorm_fields :exclude => [:password, :password_confirmation]
+    sencha_fields :exclude => [:password, :password_confirmation]
     
     # OR 
-    whorm_fields :name, :description
+    sencha_fields :name, :description
     
     # OR
-    whorm_fields :only => [:name, :description] # actually the same as above
+    sencha_fields :only => [:name, :description] # actually the same as above
     
     # OR
-    whorm_fields :additional => [:computed] # includes all database columns and an additional computed field
+    sencha_fields :additional => [:computed] # includes all database columns and an additional computed field
     
     # OR define a column as a Hash
-    whorm_fields :description, :name => {"sortDir" => "ASC"}, :created_at => {"dateFormat" => "c"}
+    sencha_fields :description, :name => {"sortDir" => "ASC"}, :created_at => {"dateFormat" => "c"}
 	
     # OR render associations, association-fields will have their "mapping" property set automatically
-    whorm_fields :name, :description, :company => [:name, :description]
+    sencha_fields :name, :description, :company => [:name, :description]
     
     def computed
       name.blank? ? login : name
     end
   end
 
-After including the model mixin <tt>Whorm::Model</tt>, try typing the following in <tt>irb</tt> console:
-    >> User.whorm_schema
+After including the model mixin <tt>Sencha::Model</tt>, try typing the following in <tt>irb</tt> console:
+    >> User.sencha_schema
     => { :idProperty=>"id", :fields=>[
          {:type=>'int', :allowBlank=>true, :name=>"id"},
          {:type=>'string', :allowBlank=>false, :name=>"first", :defaultValue => nil},
@@ -58,13 +58,13 @@ E.g. with the following definition:
 	class User < ActiveRecord::Base
 	  include ExtJS::Model
 
-	  whorm_fieldset :grid, [
+	  sencha_fieldset :grid, [
 	    :name, 
       :description, 
 	    {:company => [:name, :description]}
 	  ]
 
-	  whorm_fieldset :combo, [:full_name]
+	  sencha_fieldset :combo, [:full_name]
 	
 	  ##
 	  # computed field
@@ -75,23 +75,23 @@ E.g. with the following definition:
 	end
 
 You can get store configs for both representations with
-    User.whorm_schema(:grid)
+    User.sencha_schema(:grid)
 or
-    User.whorm_schema(:combo)
+    User.sencha_schema(:combo)
     
 And the corresponding data for the representations with
     User.first.to_record(:grid)
 or
     User.first.to_record(:combo)
 
-=== A Testing Mixin:  Whorm::TestMacros
-The <tt>whorm</tt> Gem includes a small set of testing macros to help unit-test models.
+=== A Testing Mixin:  Sencha::TestMacros
+The <tt>sencha</tt> Gem includes a small set of testing macros to help unit-test models.
 Using this macro requires the 'Shoulda' gem from thoughtbot
 
 ==== Usage
 In individual model unit tests:
     class ModelTest < ActiveSupport::TestCase
-      should_have_whorm_fields_for_fieldset :fieldset_name, [:name, :email, :city]
+      should_have_sencha_fields_for_fieldset :fieldset_name, [:name, :email, :city]
       #...
       #other tests
     end

@@ -1,18 +1,18 @@
 ##
 # ActiveRecord adapter to Whorm::Model mixin.
 #
-module Whorm
+module Sencha
   module Model
     module ClassMethods
-      def whorm_primary_key
+      def sencha_primary_key
         self.primary_key.to_sym
       end
       
-      def whorm_column_names
+      def sencha_column_names
         self.column_names.map(&:to_sym)
       end
       
-      def whorm_columns_hash
+      def sencha_columns_hash
         self.columns_hash.symbolize_keys
       end
       
@@ -21,9 +21,9 @@ module Whorm
       # @param {ActiveRecord::ConnectionAdapters::Column}
       # @return {Boolean}
       #
-      def whorm_allow_blank(col)
+      def sencha_allow_blank(col)
         # if the column is the primary key always allow it to be blank.
-        # Otherwise we could not create new records with whorm because
+        # Otherwise we could not create new records with sencha because
         # new records have no id and thus cannot be valid
         col.name == self.primary_key || col.null
       end
@@ -33,7 +33,7 @@ module Whorm
       # @param {ActiveRecord::ConnectionAdapters::Column}
       # @return {Mixed}
       #
-      def whorm_default(col)
+      def sencha_default(col)
         col.default
       end
       
@@ -41,7 +41,7 @@ module Whorm
       # returns the corresponding column name of the type column for a polymorphic association
       # @param {String/Symbol} the id column name for this association
       # @return {Symbol}
-      def whorm_polymorphic_type(id_column_name)
+      def sencha_polymorphic_type(id_column_name)
         id_column_name.to_s.gsub(/_id\Z/, '_type').to_sym
       end
       
@@ -50,7 +50,7 @@ module Whorm
       # @param {ActiveRecord::ConnectionAdapters::Column}
       # @return {String}
       #
-      def whorm_type(col)
+      def sencha_type(col)
         type = col.type.to_s
         case type
           when "datetime", "date", "time", "timestamp"
@@ -69,8 +69,8 @@ module Whorm
       # return a simple, normalized list of AR associations having the :name, :type and association class
       # @return {Array}
       #
-      def whorm_associations
-        @whorm_associations ||= self.reflections.inject({}) do |memo, (key, assn)|
+      def sencha_associations
+        @sencha_associations ||= self.reflections.inject({}) do |memo, (key, assn)|
           type = (assn.macro === :has_many || assn.macro === :has_and_belongs_to_many) ? :many : assn.macro
           memo[key.to_sym] = {
             :name => key.to_sym, 

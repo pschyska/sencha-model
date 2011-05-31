@@ -1,17 +1,17 @@
-module Whorm
+module Sencha
   module Model
     
     def self.included(model)
       model.send(:extend, ClassMethods)
       model.send(:include, InstanceMethods)
       ##
-      # @config {String} whorm_parent_trail_template This a template used to render mapped field-names.
+      # @config {String} sencha_parent_trail_template This a template used to render mapped field-names.
       # Default is Proc.new{ |field_name| "_#{field_name}" }
       # You could also use the Rails standard
       # Proc.new{ |field_name| "[#{field_name}]" }
       #
-      model.cattr_accessor :whorm_parent_trail_template
-      model.whorm_parent_trail_template = Proc.new{ |field_name| "_#{field_name}" } if model.whorm_parent_trail_template.nil?
+      model.cattr_accessor :sencha_parent_trail_template
+      model.sencha_parent_trail_template = Proc.new{ |field_name| "_#{field_name}" } if model.sencha_parent_trail_template.nil?
     end
 
     ##
@@ -45,13 +45,13 @@ module Whorm
         
         fields = []
         if options[:fields].empty?
-          fields = self.class.whorm_get_fields_for_fieldset(fieldset)
+          fields = self.class.sencha_get_fields_for_fieldset(fieldset)
         else
           fields = self.class.process_fields(*options[:fields])
         end
         
-        assns   = self.class.whorm_associations
-        pk      = self.class.whorm_primary_key
+        assns   = self.class.sencha_associations
+        pk      = self.class.sencha_primary_key
         
         # build the initial field data-hash
         data    = {pk => self.send(pk)}
@@ -72,7 +72,7 @@ module Whorm
               if association.respond_to? :to_record
                 assn_fields = field[:fields]
                 if assn_fields.nil?
-                  assn_fields = association.class.whorm_get_fields_for_fieldset(field.fetch(:fieldset, fieldset))
+                  assn_fields = association.class.sencha_get_fields_for_fieldset(field.fetch(:fieldset, fieldset))
                 end
                 
                 value = association.to_record :fields => assn_fields,
@@ -87,7 +87,7 @@ module Whorm
                 # Append associations foreign_key to data
                 data[association_reflection[:foreign_key]] = self.send(association_reflection[:foreign_key])
                 if association_reflection[:is_polymorphic]
-                  foreign_type = self.class.whorm_polymorphic_type(association_reflection[:foreign_key])
+                  foreign_type = self.class.sencha_polymorphic_type(association_reflection[:foreign_key])
                   data[foreign_type] = self.send(foreign_type)
                 end
               end
@@ -119,29 +119,29 @@ module Whorm
       #
       # All these are valid calls:
       #
-      #  User.whorm_schema             # returns record config for :default fieldset 
+      #  User.sencha_schema             # returns record config for :default fieldset 
       #                                # (fieldset is autmatically defined, if not set)
       #
-      #  User.whorm_schema :fieldset   # returns record config for :fieldset fieldset
+      #  User.sencha_schema :fieldset   # returns record config for :fieldset fieldset
       #                                # (fieldset is autmatically defined, if not set)
       #
-      #  User.whorm_schema :fields => [:id, :password]
+      #  User.sencha_schema :fields => [:id, :password]
       #                                # returns record config for the fields 'id' and 'password'
       # 
       # For even more valid options for this method (which all should not be neccessary to use)
       # have a look at Whorm::Model::Util.extract_fieldset_and_options
-      def whorm_schema(*params)
+      def sencha_schema(*params)
         fieldset, options = Util.extract_fieldset_and_options params
         
         if options[:fields].empty?
-          fields = self.whorm_get_fields_for_fieldset(fieldset)
+          fields = self.sencha_get_fields_for_fieldset(fieldset)
         else
           fields = self.process_fields(*options[:fields])
         end
         
-        associations  = self.whorm_associations
-        columns       = self.whorm_columns_hash
-        pk            = self.whorm_primary_key
+        associations  = self.sencha_associations
+        columns       = self.sencha_columns_hash
+        pk            = self.sencha_primary_key
         rs            = []
         
         fields.each do |field|
@@ -149,48 +149,48 @@ module Whorm
           field = Marshal.load(Marshal.dump(field)) # making a deep copy
           
           if col = columns[field[:name]] # <-- column on this model                
-            rs << self.whorm_field(field, col)      
+            rs << self.sencha_field(field, col)      
           elsif assn = associations[field[:name]]
             # skip this association if we already visited it
             # otherwise we could end up in a cyclic reference
             next if options[:visited_classes].include? assn[:class]
             
             assn_fields = field[:fields]
-            if assn[:class].respond_to?(:whorm_schema)  # <-- exec whorm_schema on assn Model.
+            if assn[:class].respond_to?(:sencha_schema)  # <-- exec sencha_schema on assn Model.
               if assn_fields.nil?
-                assn_fields = assn[:class].whorm_get_fields_for_fieldset(field.fetch(:fieldset, fieldset))
+                assn_fields = assn[:class].sencha_get_fields_for_fieldset(field.fetch(:fieldset, fieldset))
               end
               
-              record = assn[:class].whorm_schema(field.fetch(:fieldset, fieldset), { :visited_classes => options[:visited_classes] + [self], :fields => assn_fields})
+              record = assn[:class].sencha_schema(field.fetch(:fieldset, fieldset), { :visited_classes => options[:visited_classes] + [self], :fields => assn_fields})
               rs.concat(record[:fields].collect { |assn_field| 
-                self.whorm_field(assn_field, :parent_trail => field[:name], :mapping => field[:name], :allowBlank => true) # <-- allowBlank on associated data?
+                self.sencha_field(assn_field, :parent_trail => field[:name], :mapping => field[:name], :allowBlank => true) # <-- allowBlank on associated data?
               })
             elsif assn_fields  # <-- :parent => [:id, :name, :sub => [:id, :name]]
               field_collector = Proc.new do |parent_trail, mapping, assn_field|
                 if assn_field.is_a?(Hash) && assn_field.keys.size == 1 && assn_field.keys[0].is_a?(Symbol) && assn_field.values[0].is_a?(Array)
-                  field_collector.call(parent_trail.to_s + self.whorm_parent_trail_template.call(assn_field.keys.first), "#{mapping}.#{assn_field.keys.first}", assn_field.values.first) 
+                  field_collector.call(parent_trail.to_s + self.sencha_parent_trail_template.call(assn_field.keys.first), "#{mapping}.#{assn_field.keys.first}", assn_field.values.first) 
                 else
-                  self.whorm_field(assn_field, :parent_trail => parent_trail, :mapping => mapping, :allowBlank => true)
+                  self.sencha_field(assn_field, :parent_trail => parent_trail, :mapping => mapping, :allowBlank => true)
                 end
               end
               rs.concat(assn_fields.collect { |assn_field| field_collector.call(field[:name], field[:name], assn_field) })
             else  
-              rs << whorm_field(field)
+              rs << sencha_field(field)
             end
             
             # attach association's foreign_key if not already included.
             if columns.has_key?(assn[:foreign_key]) && !rs.any? { |r| r[:name] == assn[:foreign_key] }
-              rs << whorm_field({:name => assn[:foreign_key]}, columns[assn[:foreign_key]])
+              rs << sencha_field({:name => assn[:foreign_key]}, columns[assn[:foreign_key]])
             end
             # attach association's type if polymorphic association and not alredy included
             if assn[:is_polymorphic]
-              foreign_type = self.whorm_polymorphic_type(assn[:foreign_key])
+              foreign_type = self.sencha_polymorphic_type(assn[:foreign_key])
               if columns.has_key?(foreign_type) && !rs.any? { |r| r[:name] == foreign_type }
-                rs << whorm_field({:name => foreign_type}, columns[foreign_type])
+                rs << sencha_field({:name => foreign_type}, columns[foreign_type])
               end
             end
           else # property is a method?
-            rs << whorm_field(field)
+            rs << sencha_field(field)
           end
         end
         
@@ -201,30 +201,30 @@ module Whorm
       end
       
       ##
-      # meant to be used within a Model to define the whorm record fields.
+      # meant to be used within a Model to define the sencha record fields.
       # eg:
       # class User
-      #   whorm_fieldset :grid, [:first, :last, :email => {"sortDir" => "ASC"}, :company => [:id, :name]]
+      #   sencha_fieldset :grid, [:first, :last, :email => {"sortDir" => "ASC"}, :company => [:id, :name]]
       # end
       # or
       # class User
-      #   whorm_fieldset :last, :email => {"sortDir" => "ASC"}, :company => [:id, :name] # => implies fieldset name :default
+      #   sencha_fieldset :last, :email => {"sortDir" => "ASC"}, :company => [:id, :name] # => implies fieldset name :default
       # end
       #
-      def whorm_fieldset(*params)
+      def sencha_fieldset(*params)
         fieldset, options = Util.extract_fieldset_and_options params
-        var_name = :"@whorm_fieldsets__#{fieldset}"
+        var_name = :"@sencha_fieldsets__#{fieldset}"
         self.instance_variable_set( var_name, self.process_fields(*options[:fields]) )
       end
       
-      def whorm_get_fields_for_fieldset(fieldset)
-        var_name = :"@whorm_fieldsets__#{fieldset}"
+      def sencha_get_fields_for_fieldset(fieldset)
+        var_name = :"@sencha_fieldsets__#{fieldset}"
         super_value = nil
         unless self.instance_variable_get( var_name )
-          if self.superclass.respond_to? :whorm_get_fields_for_fieldset
-            super_value = self.superclass.whorm_get_fields_for_fieldset(fieldset)
+          if self.superclass.respond_to? :sencha_get_fields_for_fieldset
+            super_value = self.superclass.sencha_get_fields_for_fieldset(fieldset)
           end
-          self.whorm_fieldset(fieldset, self.whorm_column_names) unless super_value
+          self.sencha_fieldset(fieldset, self.sencha_column_names) unless super_value
         end
         super_value || self.instance_variable_get( var_name )
       end
@@ -232,8 +232,8 @@ module Whorm
       ##
       # shortcut to define the default fieldset. For backwards-compatibility.
       #
-      def whorm_fields(*params)
-        self.whorm_fieldset(:default, {
+      def sencha_fields(*params)
+        self.sencha_fieldset(:default, {
           :fields => params
         })
       end
@@ -248,15 +248,15 @@ module Whorm
         if params.size == 1 && params.last.is_a?(Hash) # peek into argument to see if its an option hash
           options = params.last
           if options.has_key?(:additional) && options[:additional].is_a?(Array)
-            return self.process_fields(*(self.whorm_column_names + options[:additional].map(&:to_sym)))
+            return self.process_fields(*(self.sencha_column_names + options[:additional].map(&:to_sym)))
           elsif options.has_key?(:exclude) && options[:exclude].is_a?(Array)
-            return self.process_fields(*(self.whorm_column_names - options[:exclude].map(&:to_sym)))
+            return self.process_fields(*(self.sencha_column_names - options[:exclude].map(&:to_sym)))
           elsif options.has_key?(:only) && options[:only].is_a?(Array)
             return self.process_fields(*options[:only])
           end
         end
         
-        params = self.whorm_column_names if params.empty?
+        params = self.sencha_column_names if params.empty?
         
         params.each do |f|
           if f.kind_of?(Hash)
@@ -286,27 +286,27 @@ module Whorm
       # @param {Hash/Column} field Field-configuration Hash, probably has :name already set and possibly Ext.data.Field options.
       # @param {ORM Column Object from AR, DM or MM}
       #
-      def whorm_field(field, config=nil)  
+      def sencha_field(field, config=nil)  
         if config.kind_of? Hash
           if config.has_key?(:mapping) && config.has_key?(:parent_trail)
             field.update( # <-- We use a template for rendering mapped field-names.
-              :name => config[:parent_trail].to_s + self.whorm_parent_trail_template.call(field[:name]),
+              :name => config[:parent_trail].to_s + self.sencha_parent_trail_template.call(field[:name]),
               :mapping => "#{config[:mapping]}.#{field[:name]}"
             )
           end
           field.update(config.except(:mapping, :parent_trail))
         elsif !config.nil?  # <-- Hopfully an ORM Column object.
           field.update(
-            :allowBlank => self.whorm_allow_blank(config),
-            :type => self.whorm_type(config),
-            :defaultValue => self.whorm_default(config)
+            :allowBlank => self.sencha_allow_blank(config),
+            :type => self.sencha_type(config),
+            :defaultValue => self.sencha_default(config)
           )
           field[:dateFormat] = "c" if field[:type] === "date" && field[:dateFormat].nil? # <-- ugly hack for date  
         end  
         field.update(:type => "auto") if field[:type].nil?
         # convert Symbol values to String values
         field.keys.each do |k|
-          raise ArgumentError, "whorm_field expects a Hash as first parameter with all it's keys Symbols. Found key #{k.inspect}:#{k.class.to_s}" unless k.is_a?(Symbol)
+          raise ArgumentError, "sencha_field expects a Hash as first parameter with all it's keys Symbols. Found key #{k.inspect}:#{k.class.to_s}" unless k.is_a?(Symbol)
           field[k] = field[k].to_s if field[k].is_a?(Symbol)
         end
         field
@@ -316,18 +316,18 @@ module Whorm
       # # Returns an array of symbolized association names that will be referenced by a call to to_record
       # # i.e. [:parent1, :parent2]
       # #
-      # def whorm_used_associations
-      #   if @whorm_used_associations.nil?
+      # def sencha_used_associations
+      #   if @sencha_used_associations.nil?
       #     assoc = []
-      #     self.whorm_record_fields.each do |f|
+      #     self.sencha_record_fields.each do |f|
       #       #This needs to be the first condition because the others will break if f is an Array
-      #       if whorm_associations[f[:name]]
+      #       if sencha_associations[f[:name]]
       #         assoc << f[:name]
       #       end
       #     end
-      #     @whorm_used_associations = assoc.uniq
+      #     @sencha_used_associations = assoc.uniq
       #   end
-      #   @whorm_used_associations
+      #   @sencha_used_associations
       # end
     end
     

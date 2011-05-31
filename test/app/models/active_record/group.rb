@@ -1,4 +1,4 @@
 class Group < ActiveRecord::Base
   has_many :users
-  include Whorm::Model
+  include Sencha::Model
 end

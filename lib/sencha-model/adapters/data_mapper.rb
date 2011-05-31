@@ -2,33 +2,33 @@
 # DataMapper adapter for Whorm::Model mixin
 #
 
-module Whorm
+module Sencha
   module Model
     module ClassMethods
       
-      def whorm_primary_key
+      def sencha_primary_key
         self.key.first.name
       end
       
-      def whorm_column_names
+      def sencha_column_names
         self.properties.collect {|p| p.name.to_s }
       end
       
-      def whorm_columns_hash
-        if @whorm_columns_hash.nil?
-          @whorm_columns_hash = {}
+      def sencha_columns_hash
+        if @sencha_columns_hash.nil?
+          @sencha_columns_hash = {}
           self.properties.each do |p|
-            @whorm_columns_hash[p.name] = p
+            @sencha_columns_hash[p.name] = p
           end
         end
-        @whorm_columns_hash
+        @sencha_columns_hash
       end
       
-      def whorm_allow_blank(col)
+      def sencha_allow_blank(col)
          (col === self.key.first) ? true : col.nullable?
       end
       
-      def whorm_type(col)
+      def sencha_type(col)
         type = ((col.type.respond_to?(:primitive)) ? col.type.primitive : col.type).to_s
         case type
           when "DateTime", "Date", "Time"
@@ -44,12 +44,12 @@ module Whorm
         end
       end
       
-      def whorm_associations
-        if @whorm_associations.nil?  
-          @whorm_associations = {}
+      def sencha_associations
+        if @sencha_associations.nil?  
+          @sencha_associations = {}
           self.relationships.keys.each do |key|
             assn = self.relationships[key]
-            @whorm_associations[key.to_sym] = {
+            @sencha_associations[key.to_sym] = {
               :name => key, 
               :type => type = (assn.options[:max].nil? && assn.options[:min].nil?) ? :belongs_to : (assn.options[:max] > 1) ? :many : nil ,
               :class => assn.parent_model,
@@ -58,7 +58,7 @@ module Whorm
             }
           end
         end
-        @whorm_associations
+        @sencha_associations
       end
     end
   end

@@ -7,28 +7,28 @@ p = Person.create(:first => "Chris", :last => "Scott", :email => "chris@scott.co
 u = User.create(:password => "1234", :person => p)
 
 class BogusModel
-  include Whorm::Model
+  include Sencha::Model
   def additional_attribute
     'computed value'
   end
   class << self
-    def whorm_allow_blank(col)
+    def sencha_allow_blank(col)
       true
     end
     
-    def whorm_default(col)
+    def sencha_default(col)
       nil
     end
     
-    def whorm_type(col)
+    def sencha_type(col)
       nil
     end
     
-    def whorm_column_names
+    def sencha_column_names
       [:one, :two, :three_id]
     end
     
-    def whorm_columns_hash
+    def sencha_columns_hash
       {
         :one   => {},
         :two   => {},
@@ -36,15 +36,15 @@ class BogusModel
       }
     end
     
-    def whorm_polymorphic_type(id_column_name)
+    def sencha_polymorphic_type(id_column_name)
       id_column_name.to_s.gsub(/_id\Z/, '_type').to_sym
     end
     
-    def whorm_primary_key
+    def sencha_primary_key
       :id
     end
  
-    def whorm_associations
+    def sencha_associations
       {
         :three => {
           :name => :tree,
@@ -70,25 +70,25 @@ class ModelTest < Test::Unit::TestCase
 	  end
 
 	  should "Person and User should render a valid Reader config" do
-	    reader = Person.whorm_schema
+	    reader = Person.sencha_schema
 	    assert reader.kind_of?(Hash) && reader.has_key?(:fields) && reader.has_key?(:idProperty)
 	  end
 	  should "Person instance should render with to_record, a Hash containing at least a primary_key" do
 	    rec = Person.first.to_record
 	    assert_kind_of(Hash, rec)
-	    assert_array_has_item(rec.keys, 'has primary key') { |i| i.to_s == Person.whorm_primary_key.to_s }
+	    assert_array_has_item(rec.keys, 'has primary key') { |i| i.to_s == Person.sencha_primary_key.to_s }
 	  end
 	  should "User should render a Reader config" do
-	    reader = User.whorm_schema
+	    reader = User.sencha_schema
 	    assert reader.kind_of?(Hash) && reader.has_key?(:fields) && reader.has_key?(:idProperty)
 	  end
 	  should "User instance should render with to_record, a Hash containing at least a primary_key" do
 	    rec = User.first.to_record
-	    assert rec.kind_of?(Hash) && rec.keys.include?(User.whorm_primary_key)
+	    assert rec.kind_of?(Hash) && rec.keys.include?(User.sencha_primary_key)
 	  end
 	  should "User instance should render to_record containing foreign_key of Person" do
 	    rec = User.first.to_record
-	    assn = User.whorm_associations[:person]
+	    assn = User.sencha_associations[:person]
 	    assert rec.keys.include?(assn[:foreign_key])
 	  end
 	  
@@ -105,16 +105,16 @@ class ModelTest < Test::Unit::TestCase
     end
     
     should "Render to_record should return 2 groups" do
-      User.whorm_fields(:groups)
+      User.sencha_fields(:groups)
       assert @user.to_record[:groups].length == 2
     end
   end
 
-  context "A User with Person relationship: User.whorm_fields(:password, :person => [:first, {:last => {'sortDir' => 'ASC'}}])" do
+  context "A User with Person relationship: User.sencha_fields(:password, :person => [:first, {:last => {'sortDir' => 'ASC'}}])" do
     setup do
       App.clean_all
-      User.whorm_fields(:password, {:person => [:first, {:last => {:sortDir => "ASC"}}]})
-	    @fields = User.whorm_schema[:fields]
+      User.sencha_fields(:password, {:person => [:first, {:last => {:sortDir => "ASC"}}]})
+	    @fields = User.sencha_schema[:fields]
     end
     
     should "User should render a Reader with 4 total fields" do
@@ -124,7 +124,7 @@ class ModelTest < Test::Unit::TestCase
       assert_array_has_item(@fields, 'has password field') {|f| f[:name] === "password"}
     end
     should "Reader fields should contain person_id" do
-      assns = User.whorm_associations  
+      assns = User.sencha_associations  
       assn = assns[:person]
       assert_array_has_item(@fields, 'has foreign key person_id') {|f| f[:name] === assns[:person][:foreign_key].to_s }
     end
@@ -153,10 +153,10 @@ class ModelTest < Test::Unit::TestCase
   context "User with standard Person association" do
     setup do
       App.clean_all
-      User.whorm_fields(:id, :password, :person)
+      User.sencha_fields(:id, :password, :person)
     end
     should "produce a valid store config" do
-      fields = User.whorm_schema[:fields]
+      fields = User.sencha_schema[:fields]
       assert_array_has_item(fields, 'has id') {|f| f[:name] === "id" }
       assert_array_has_item(fields, 'has person_id') {|f| f[:name] === "person_id" }
       assert_array_has_item(fields, 'has password') {|f| f[:name] === "password" }
@@ -178,11 +178,11 @@ class ModelTest < Test::Unit::TestCase
   context "Person with User association (has_one relationship)" do
     setup do
       App.clean_all
-      User.whorm_fields(:id, :password)
-      Person.whorm_fields(:id, :user)
+      User.sencha_fields(:id, :password)
+      Person.sencha_fields(:id, :user)
     end
     should "produce a valid store config" do
-      fields = Person.whorm_schema[:fields]
+      fields = Person.sencha_schema[:fields]
       assert_array_has_item(fields, 'has id') {|f| f[:name] === "id" }
       assert_array_has_item(fields, 'has user_id') {|f| f[:name] === "user_id" and f[:mapping] == 'user.id' }
       assert_array_has_item(fields, 'has user_password') {|f| f[:name] === "user_password"and f[:mapping] == 'user.password' }
@@ -200,11 +200,11 @@ class ModelTest < Test::Unit::TestCase
   context "Person with User association (has_one/belongs_to relationship) cyclic reference" do
     setup do
       App.clean_all
-      User.whorm_fields(:id, :person)
-      Person.whorm_fields(:id, :user)
+      User.sencha_fields(:id, :person)
+      Person.sencha_fields(:id, :user)
     end
     should "produce a valid store config for Person" do
-      fields = Person.whorm_schema[:fields]
+      fields = Person.sencha_schema[:fields]
       assert_array_has_item(fields, 'has id') {|f| f[:name] === "id" }
       assert_array_has_item(fields, 'has user_id') {|f| f[:name] === "user_id" and f[:mapping] == 'user.id' }
     end
@@ -220,7 +220,7 @@ class ModelTest < Test::Unit::TestCase
   context "Fields should render with correct, ExtJS-compatible data-types" do
     setup do
       App.clean_all
-      @fields = DataType.whorm_schema[:fields]
+      @fields = DataType.sencha_schema[:fields]
     end
     
     should "Understand 'string'" do
@@ -261,26 +261,26 @@ class ModelTest < Test::Unit::TestCase
     end
     
     should "return nil as class for a polymorphic relation" do
-      assert_equal(nil, Address.whorm_associations[:addressable][:class])
+      assert_equal(nil, Address.sencha_associations[:addressable][:class])
     end
     
     should "create a proper default store config" do
-      Address.whorm_fields
-      fields = Address.whorm_schema[:fields]
+      Address.sencha_fields
+      fields = Address.sencha_schema[:fields]
       assert_array_has_item(fields, 'has addressable_id') {|f| f[:name] === 'addressable_id' && !f[:mapping] }
       assert_array_has_item(fields, 'addressable_type') {|f| f[:name] === 'addressable_type' && !f[:mapping] }
     end
     
     should "create the right store config when including members of the polymorphic association" do
-      Address.whorm_fields :street, :addressable => [:name]
-      fields = Address.whorm_schema[:fields]
+      Address.sencha_fields :street, :addressable => [:name]
+      fields = Address.sencha_schema[:fields]
       assert_array_has_item(fields, "has addressable_name") {|f| f[:name] === 'addressable_name' && f[:mapping] === 'addressable.name'}
       assert_array_has_item(fields, "has addressable_id") {|f| f[:name] === 'addressable_id' && !f[:mapping] }
       assert_array_has_item(fields, "has addressable_type") {|f| f[:name] === 'addressable_type' && !f[:mapping] }
     end
     
     should "fill in the right values for to_record" do
-      Address.whorm_fields :street, :addressable => [:name]
+      Address.sencha_fields :street, :addressable => [:name]
       location = Location.create!(:name => 'Home')
       address = location.create_address(:street => 'Main Street 1')
       record = address.to_record
@@ -298,24 +298,24 @@ class ModelTest < Test::Unit::TestCase
     end
     
     should "fieldsets should be accessible from descendants" do
-      Location.whorm_fieldset :on_location, [:street]
-      fields = House.whorm_schema(:on_location)[:fields]
+      Location.sencha_fieldset :on_location, [:street]
+      fields = House.sencha_schema(:on_location)[:fields]
       assert_array_has_item(fields, 'has street') {|f| f[:name] === 'street' }
       assert_array_has_not_item(fields, 'has name') {|f| f[:name] === 'name' }
     end
     should "fieldsets should be overrideable from descendants" do
-      Location.whorm_fieldset :override, [:street]
-      House.whorm_fieldset :override, [:name]
-      fields = House.whorm_schema(:override)[:fields]
+      Location.sencha_fieldset :override, [:street]
+      House.sencha_fieldset :override, [:name]
+      fields = House.sencha_schema(:override)[:fields]
       assert_array_has_not_item(fields, 'has street') {|f| f[:name] === 'street' }
       assert_array_has_item(fields, 'has name') {|f| f[:name] === 'name' }
     end
   end
   
-  context "Whorm::Model::Util" do
+  context "Sencha::Model::Util" do
     context "#extract_fieldset_and_options default" do
       setup do
-        @fieldset, @options = Whorm::Model::Util.extract_fieldset_and_options [:fields => [:one, :two, :three]]
+        @fieldset, @options = Sencha::Model::Util.extract_fieldset_and_options [:fields => [:one, :two, :three]]
         @fields = @options[:fields]
       end
       should "return :default when no fieldset provided" do
@@ -328,7 +328,7 @@ class ModelTest < Test::Unit::TestCase
 
     context "#extract_fieldset_and_options with explicit fieldset definition and array with fields" do
       setup do
-        @fieldset, @options = Whorm::Model::Util.extract_fieldset_and_options [:explicit, [:one, :two, :three]]
+        @fieldset, @options = Sencha::Model::Util.extract_fieldset_and_options [:explicit, [:one, :two, :three]]
         @fields = @options[:fields]
       end
       should "return :default when no fieldset provided" do
@@ -341,7 +341,7 @@ class ModelTest < Test::Unit::TestCase
     
     context "#extract_fieldset_and_options with explicit fieldset definition and hash with fields" do
       setup do
-        @fieldset, @options = Whorm::Model::Util.extract_fieldset_and_options [:explicit, {:fields => [:one, :two, :three]}]
+        @fieldset, @options = Sencha::Model::Util.extract_fieldset_and_options [:explicit, {:fields => [:one, :two, :three]}]
         @fields = @options[:fields]
       end
       should "return :default when no fieldset provided" do
@@ -354,7 +354,7 @@ class ModelTest < Test::Unit::TestCase
     
     context "#extract_fieldset_and_options with only a hash" do
       setup do
-        @fieldset, @options = Whorm::Model::Util.extract_fieldset_and_options [{:fieldset => :explicit, :fields => [:one, :two, :three]}]
+        @fieldset, @options = Sencha::Model::Util.extract_fieldset_and_options [{:fieldset => :explicit, :fields => [:one, :two, :three]}]
         @fields = @options[:fields]
       end
       should "return :default when no fieldset provided" do
@@ -367,27 +367,27 @@ class ModelTest < Test::Unit::TestCase
     
     context "#extract_fieldset_and_options edge cases" do
       should "called without arguments" do
-        @fieldset, @options = Whorm::Model::Util.extract_fieldset_and_options []
+        @fieldset, @options = Sencha::Model::Util.extract_fieldset_and_options []
         @fields = @options[:fields]
         assert_equal(:'default', @fieldset)
         assert_equal([], @fields)
       end
       should "called with only the fieldset and no field arguments" do
-        @fieldset, @options = Whorm::Model::Util.extract_fieldset_and_options [:explicit]
+        @fieldset, @options = Sencha::Model::Util.extract_fieldset_and_options [:explicit]
         @fields = @options[:fields]
         assert_equal(:'explicit', @fieldset)
         assert_equal([], @fields)
       end
       should "raise error when called with more than 2 arguments" do
-        assert_raise(ArgumentError) { Whorm::Model::Util.extract_fieldset_and_options [:explicit, :some, {}] }
+        assert_raise(ArgumentError) { Sencha::Model::Util.extract_fieldset_and_options [:explicit, :some, {}] }
       end
       should "raise error when called with 2 arguments and the first one is no symbol" do
-        assert_raise(ArgumentError) { Whorm::Model::Util.extract_fieldset_and_options [{ :fields => [] }, :explicit] }
+        assert_raise(ArgumentError) { Sencha::Model::Util.extract_fieldset_and_options [{ :fields => [] }, :explicit] }
       end
     end
   end
   
-  context "Whorm::Model::ClassMethods" do
+  context "Sencha::Model::ClassMethods" do
     
     context "#process_fields" do
       should "handle a simple Array of Symbols" do
@@ -435,80 +435,80 @@ class ModelTest < Test::Unit::TestCase
       end
     end
     
-    context "#whorm_field" do
+    context "#sencha_field" do
       should "type gets set to 'auto' when not present" do
-        @field = BogusModel.whorm_field({:name => :test})
+        @field = BogusModel.sencha_field({:name => :test})
         assert_equal('auto', @field[:type])
       end
       should "not touch type when alredy present" do
-        @field = BogusModel.whorm_field({:name => :test, :type => 'untouched'})
+        @field = BogusModel.sencha_field({:name => :test, :type => 'untouched'})
         assert_equal('untouched', @field[:type])
       end
       should "raise exception when bogus field config passed" do
-        assert_raise(ArgumentError) { BogusModel.whorm_field({:name => :test, "type" => 'untouched'}) }
+        assert_raise(ArgumentError) { BogusModel.sencha_field({:name => :test, "type" => 'untouched'}) }
       end
 
     end
     
-    context "#whorm_field with ORM config" do
+    context "#sencha_field with ORM config" do
       should "set allowBlank" do
-        BogusModel.expects(:whorm_allow_blank).returns(false)
-        @field = BogusModel.whorm_field({:name => :test}, stub())
+        BogusModel.expects(:sencha_allow_blank).returns(false)
+        @field = BogusModel.sencha_field({:name => :test}, stub())
         assert_equal(false, @field[:allowBlank])
       end
       should "set type" do
-        BogusModel.expects(:whorm_type).returns('int')
-        @field = BogusModel.whorm_field({:name => :test}, stub())
+        BogusModel.expects(:sencha_type).returns('int')
+        @field = BogusModel.sencha_field({:name => :test}, stub())
         assert_equal('int', @field[:type])
       end
       should "set defaultValue" do
-        BogusModel.expects(:whorm_default).returns(true)
-        @field = BogusModel.whorm_field({:name => :test}, stub())
+        BogusModel.expects(:sencha_default).returns(true)
+        @field = BogusModel.sencha_field({:name => :test}, stub())
         assert_equal(true, @field[:defaultValue])
       end
       should "set dateFormat to c it's a date" do
-        BogusModel.expects(:whorm_type).returns('date')
-        @field = BogusModel.whorm_field({:name => :test}, stub())
+        BogusModel.expects(:sencha_type).returns('date')
+        @field = BogusModel.sencha_field({:name => :test}, stub())
         assert_equal('c', @field[:dateFormat])
       end
       should "not touch dateFormat if it's already set" do
-        BogusModel.expects(:whorm_type).returns('date')
-        @field = BogusModel.whorm_field({:name => :test, :dateFormat => 'not-c'}, stub())
+        BogusModel.expects(:sencha_type).returns('date')
+        @field = BogusModel.sencha_field({:name => :test, :dateFormat => 'not-c'}, stub())
         assert_equal('not-c', @field[:dateFormat])
       end
     end
     
-    context "#whorm_field with Hash config" do
+    context "#sencha_field with Hash config" do
       should "set correct name and mapping" do
-        @field = BogusModel.whorm_field({:name => :son}, {:mapping => 'grandfather.father', :parent_trail => 'grandfather_father'})
+        @field = BogusModel.sencha_field({:name => :son}, {:mapping => 'grandfather.father', :parent_trail => 'grandfather_father'})
         assert_equal('grandfather_father_son', @field[:name])
         assert_equal('grandfather.father.son', @field[:mapping])
       end
       should "apply config to field" do
-        @field = BogusModel.whorm_field({:name => :son}, {:sortDir => 'ASC'})
+        @field = BogusModel.sencha_field({:name => :son}, {:sortDir => 'ASC'})
         assert_equal('ASC', @field[:sortDir])
       end
     end
     
-    context "#whorm_get_fields_for_fieldset" do
+    context "#sencha_get_fields_for_fieldset" do
       should "return full list of columns for fieldset that was not defined, yet" do
-        @fields = BogusModel.whorm_get_fields_for_fieldset :not_there
-        assert_equal(BogusModel.process_fields(*BogusModel.whorm_column_names), @fields)
+        @fields = BogusModel.sencha_get_fields_for_fieldset :not_there
+        assert_equal(BogusModel.process_fields(*BogusModel.sencha_column_names), @fields)
       end
       should "return the right fields for a fieldset that was defined before in the same class" do
-        BogusModel.whorm_fieldset :fieldset_was_defined, [:one]
-        @fields = BogusModel.whorm_get_fields_for_fieldset :fieldset_was_defined
+        BogusModel.sencha_fieldset :fieldset_was_defined, [:one]
+        @fields = BogusModel.sencha_get_fields_for_fieldset :fieldset_was_defined
         assert_equal(BogusModel.process_fields(:one), @fields)
       end
       should "return the fieldset of the ancestor when it was only defined in the ancestor" do
-        BogusModel.whorm_fieldset :fieldset_was_defined_in_ancestor, [:one]
-        @fields = BogusModelChild.whorm_get_fields_for_fieldset :fieldset_was_defined_in_ancestor
+        BogusModel.sencha_fieldset :fieldset_was_defined_in_ancestor, [:one]
+        @fields = BogusModelChild.sencha_get_fields_for_fieldset :fieldset_was_defined_in_ancestor
         assert_equal(BogusModel.process_fields(:one), @fields)
       end
       should "return the fieldset of the child when it was defined in the child and the ancestor" do
-        BogusModel.whorm_fieldset :fieldset_was_defined_in_both, [:one]
-        BogusModelChild.whorm_fieldset :fieldset_was_defined_in_both, [:two]
-        @fields = BogusModelChild.whorm_get_fields_for_fieldset :fieldset_was_defined_in_both
+        BogusModel.sencha_fieldset :fieldset_was_defined_in_both, [:one]
+        BogusModelChild.sencha_fieldset :fieldset_was_defined_in_both, [:two]
+        @fields = BogusModelChild.sencha_get_fields_for_fieldset :fieldset_was_defined_in_both
         assert_equal(BogusModel.process_fields(:two), @fields)
       end
     end

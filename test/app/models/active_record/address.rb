@@ -1,4 +1,4 @@
 class Address < ActiveRecord::Base
   belongs_to :addressable, :polymorphic => true
-  include Whorm::Model
+  include Sencha::Model
 end

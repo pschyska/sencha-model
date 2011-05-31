@@ -1,1 +1,1 @@
-require 'whorm'
+require 'sencha-model'

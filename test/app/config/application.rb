@@ -1,7 +1,7 @@
 # TODO: Figure out how to iterate each ORM framework AR, DM, MM and test each.
 require 'active_record'
 require 'active_support'
-require 'whorm'
+require 'sencha-model'
 require 'extlib/inflection'
 
 gem 'sqlite3-ruby'
@@ -24,7 +24,7 @@ class Test::App
   end
   
   ##
-  # Reset a model's @whorm_fieldsets
+  # Reset a model's @sencha_fieldsets
   #
   def clean_all
     @models.map { |klass| clean klass }
@@ -61,7 +61,7 @@ private
   
   def clean klass
     klass.instance_variables.each do |var_name|
-      if /\A@whorm_fieldsets__/ =~ var_name.to_s
+      if /\A@sencha_fieldsets__/ =~ var_name.to_s
         klass.instance_variable_set( var_name.to_sym, nil )
       end
     end

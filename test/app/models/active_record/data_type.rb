@@ -1,3 +1,3 @@
 class DataType < ActiveRecord::Base
-  include Whorm::Model
+  include Sencha::Model
 end
