@@ -196,7 +196,12 @@ module Sencha
         
         return {
           :fields => rs,
-          :idProperty => pk
+          :idProperty => pk,
+          :associations => associations.keys.map {|a| {  # <-- New, experimental for ExtJS-4.0  
+            :type => associations[a][:type], 
+            :model => associations[a][:class].to_s,
+            :name => associations[a][:class].to_s.downcase.pluralize
+          }}
         }
       end
       
