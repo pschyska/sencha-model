@@ -219,7 +219,13 @@ module Sencha
       def sencha_fieldset(*params)
         fieldset, options = Util.extract_fieldset_and_options params
         var_name = :"@sencha_fieldsets__#{fieldset}"
-        self.instance_variable_set( var_name, self.process_fields(*options[:fields]) )
+
+        begin
+          self.instance_variable_set( var_name, self.process_fields(*options[:fields]) )
+        rescue ActiveRecord::StatementInvalid => e
+          # check to see if we're running db:migrate here, swallow the exception if so.
+          raise e unless ( File.basename($0) == "rake" && ARGV.include?("db:migrate") )          
+        end
       end
       
       def sencha_get_fields_for_fieldset(fieldset)
