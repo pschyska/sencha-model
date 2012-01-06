@@ -59,7 +59,7 @@ You can also define different sets of fields for different representations of yo
 
 E.g. with the following definition:
     class User < ActiveRecord::Base
-      include ExtJS::Model
+      include Sencha::Model
 
       sencha_fieldset :grid, [
         :name, :description, {:company => [:name, :description]}
