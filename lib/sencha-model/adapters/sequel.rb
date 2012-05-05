@@ -1,5 +1,5 @@
 ##
-# ActiveRecord adapter to Whorm::Model mixin.
+# Sequel adapter to Sencha::Model mixin
 #
 module Sencha
   module Model
@@ -13,9 +13,7 @@ module Sencha
       end
       
       def sencha_columns_hash
-        p self.columns_hash.symbolize_keys
-        self.columns_hash.symbolize_keys
-
+        self.columns
       end
       
       ##
@@ -72,15 +70,25 @@ module Sencha
       # @return {Array}
       #
       def sencha_associations
-        @sencha_associations ||= self.reflections.inject({}) do |memo, (key, assn)|
-          type = (assn.macro === :has_many || assn.macro === :has_and_belongs_to_many) ? :many : assn.macro
-          memo[key.to_sym] = {
-            :name => key.to_sym, 
+        @sencha_associations ||= self.all_association_reflections.inject({}) do |memo, assn|
+          type=case assn.class
+          when Sequel::Model::Associations::OneToOneAssociationReflection
+            :one
+          when Sequel::Model::Associations::ManyToOneAssociationReflection
+            :one
+          when Sequel::Model::Associations::OneToManyAssociationReflection
+            :many
+          when Sequel::Model::Associations::ManyToManyAssociationReflection
+            :many
+          end
+          memo[assn[:key]] = {
+            :name => assn[:name], 
             :type => type, 
-            :class => assn.options[:polymorphic] ? nil : assn.class_name.constantize,
-            :foreign_key => assn.association_foreign_key.to_sym,
-            :is_polymorphic => !!assn.options[:polymorphic]
+            :class => assn[:class],
+            :foreign_key => assn[:foreign_key],
+            :is_polymorphic => false
           }
+          p memo
           memo
         end
       end

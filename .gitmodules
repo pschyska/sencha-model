@@ -1,0 +1,3 @@
+[submodule "vendor/gems/sequel_polymorphic"]
+	path = vendor/gems/sequel_polymorphic
+	url = https://github.com/jackdempsey/sequel_polymorphic.git

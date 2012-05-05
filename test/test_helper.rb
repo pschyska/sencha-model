@@ -22,7 +22,12 @@ require "config/application"
 # eg: >rake test data_mapper
 #     >rake test mongo_mapper
 #
-App = Test::App.new(:active_record)
+case ENV['ORM']? ENV['ORM'].downcase : nil
+when 'sq'
+  App = Test::App.new(:sequel)
+else
+  App = Test::App.new(:active_record)
+end
 
 #FIXTURES_DIR  = File.join(File.dirname(__FILE__), "fixtures") 
 

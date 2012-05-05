@@ -5,7 +5,6 @@ require 'test_helper'
 #
 p = Person.create(:first => "Chris", :last => "Scott", :email => "chris@scott.com")
 u = User.create(:password => "1234", :person => p)
-
 class BogusModel
   include Sencha::Model
   def additional_attribute

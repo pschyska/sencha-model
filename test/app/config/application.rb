@@ -3,8 +3,7 @@ require 'active_record'
 require 'active_support'
 require 'sencha-model'
 require 'extlib/inflection'
-
-gem 'sqlite3-ruby'
+require 'sqlite3'
 
 class Test::App
   
@@ -16,7 +15,6 @@ class Test::App
     
     # Load ORM
     send("boot_#{orm.to_s}")
-    
     load_models
 
     require 'db/schema'
@@ -43,6 +41,15 @@ private
   
   def boot_data_mapper
     
+  end
+
+  def boot_sequel
+    require 'sequel'
+    $db = ::Sequel.connect("sqlite://db/test.sqlite3")
+    require './vendor/gems/sequel_polymorphic/lib/sequel_polymorphic.rb'
+    Sequel::Model.extend Sequel::Plugins::Polymorphic::ClassMethods
+    # also boot AR because schema is dependant on it
+    boot_active_record
   end
   
   ##
